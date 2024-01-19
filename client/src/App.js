@@ -1,5 +1,6 @@
 import { io } from "socket.io-client"
 import {useEffect, useState} from 'react';
+import { useNavigate } from "react-router-dom";
 
 import { useDispatch, useSelector } from "react-redux";
 import { setNotifications } from "./state/actions";
@@ -9,7 +10,7 @@ function App() {
   const dispatch = useDispatch();
   const { notifications } = useSelector(state => state.notificationReducer);
 
-  //const[notifications, setNotifications] = useState([])
+  const navigate = useNavigate();
   const[socket, setSocket] = useState(); 
   const[val, setVal] = useState('')
   
@@ -28,18 +29,26 @@ function App() {
 
   useEffect(() => {
     socket?.on("get", (obj) => {
-      console.log(obj.msg);
-      dispatch(setNotifications({notifications : [...notifications, obj]}))
+      //console.log("notification : " + notifications);
+      const copiedArray = Array.from(notifications);
+      //console.log("coppied arry : " + copiedArray);
+      copiedArray.push(obj);
+      //console.log("pushed arry : " + copiedArray);
+      dispatch(setNotifications({notifications : copiedArray}))
     })
   }, [socket])
 
   useEffect(() => {
-    // loadNotifications().then((res) => {setNotifications(res.data);})
-
     if(notifications.length > 0){
       loadNotifications(notifications[notifications.length - 1].dateCreated).then((res) => {
-        if(res.data.length > 0)
-          dispatch(setNotifications({notifications : [...notifications, ...res.data]}))
+        if(res.data.length > 0){
+          const copiedArray1 = Array.from(notifications);
+          //console.log("coppied arry : " + copiedArray);
+          const copiedArray2 = copiedArray1.concat(res.data);
+          //console.log("pushed arry : " + copiedArray);
+          dispatch(setNotifications({notifications : copiedArray2}))
+            //dispatch(setNotifications({notifications : [...notifications, ...res.data]}))
+        }
       })
     }
     else{
@@ -53,8 +62,8 @@ function App() {
   console.log(notifications);
   return (
     <div className="App">
-      <p>hello fuckers!</p>
-
+      <button className="btn btn-primary" onClick={() => {navigate("/not")}}>Notification page</button>
+      <hr/>
       <input type="text" placeholder="input" value={val} onChange={(e) => {setVal(e.target.value)}}/>
       <button onClick={() => {socket.emit("send", {msg : val})}}>send</button>
     </div>
