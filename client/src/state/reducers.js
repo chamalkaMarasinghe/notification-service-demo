@@ -1,5 +1,4 @@
 import { SET_NOTIFICATIONS} from "./actions";
-import { ADD_NOTIFICATIONS } from "./actions";
 
 const initialState = {
     notifications : []

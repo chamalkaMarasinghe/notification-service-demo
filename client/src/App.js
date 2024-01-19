@@ -29,25 +29,15 @@ function App() {
 
   useEffect(() => {
     socket?.on("get", (obj) => {
-      //console.log("notification : " + notifications);
-      const copiedArray = Array.from(notifications);
-      //console.log("coppied arry : " + copiedArray);
-      copiedArray.push(obj);
-      //console.log("pushed arry : " + copiedArray);
-      dispatch(setNotifications({notifications : copiedArray}))
+      dispatch(setNotifications({notifications : [...notifications, obj]}));
     })
   }, [socket])
 
   useEffect(() => {
-    if(notifications.length > 0){
+    if(notifications && notifications.length > 0){
       loadNotifications(notifications[notifications.length - 1].dateCreated).then((res) => {
         if(res.data.length > 0){
-          const copiedArray1 = Array.from(notifications);
-          //console.log("coppied arry : " + copiedArray);
-          const copiedArray2 = copiedArray1.concat(res.data);
-          //console.log("pushed arry : " + copiedArray);
-          dispatch(setNotifications({notifications : copiedArray2}))
-            //dispatch(setNotifications({notifications : [...notifications, ...res.data]}))
+          dispatch(setNotifications({notifications : [...notifications, ...res.data]}))
         }
       })
     }
@@ -59,7 +49,6 @@ function App() {
     }
   }, [])
 
-  console.log(notifications);
   return (
     <div className="App">
       <button className="btn btn-primary" onClick={() => {navigate("/not")}}>Notification page</button>
