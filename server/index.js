@@ -1,34 +1,11 @@
 const express =  require('express')
-const mongoose = require('mongoose') //mongo db library
-const cors = require('cors') //Cors will let us accept cross origin request from our frontend to backend.
+const mongoose = require('mongoose')
+const cors = require('cors') 
 const helmet = require('helmet')
 const app = express()
 app.use(helmet())
 app.use(helmet.crossOriginResourcePolicy({policy:'cross-origin'}))
 app.use(cors())
-
-//routes with files
-// const authRoute = require('./routes/auth.js')
-// const userRoute = require('./routes/users.js')
-// const postRoute = require('./routes/posts.js')
-// app.use('/auth', authRoute)
-// app.use('/users', userRoute) 
-// app.use('/posts', postRoute)
-
-
-// const Chatroom = require('./moedls/chatroom')
-
-//get all the chats of a specified room
-// app.get('/:roomid', async(req, res) => {
-//     try {
-//         const { roomid } = req.params
-//         const result = await Chatroom.findById(roomid)
-//         res.status(200).json({ 'array' : result.chats})
-//     } 
-//     catch (error) {
-//         res.status(404).json({ 'msg' : error.message })
-//     }
-// })
 
 app.use(cors({
     origin: ["http://localhost:3000"],
@@ -49,35 +26,38 @@ const io = new Server( server, {
     },
 })
 
-//io listning to the events...socket coming from the client's end
-// io.on("connection", (socket) => {
-//     console.log(`user conected on socket ${socket.id}`)
+//notification schema for database operations ---------------------------------------------------------------
+const NotificationSchema = mongoose.model('Notification', 
+    mongoose.Schema({
+        msg : {
+            type : String,
+            required : true,
+        },
+        dateCreated : {
+            type : Date,
+            required : true,
+        }
+    })
+);
 
-//     //socket waiting for occuer join_room event that emit from the client's end
-//     socket.on('join_room', (roomId) => {
-//         socket.join(roomId)
-//         console.log(`user with id ${socket.id} joind to room with id ${roomId}`);
-//     })
+// retriveing all notifications -------------------------------------------------------------------------------
+app.get("/notifications/:lastUpdatedDate", async(req, res) => {
+    const { lastUpdatedDate } = req.params;
+    const lastUpdatedDateObject = new Date(lastUpdatedDate);
+    const notifications = await NotificationSchema.find({dateCreated: {$gt: lastUpdatedDateObject}});
+    res.status(200).json({data : notifications}); 
+});
 
-//     //socket waiting for a client send a message
-//     socket.on("send_message", async(messageContainer) => {
-//         //trigger the receive message event in the client end..and send the message to the relavant room
-//         const currentRoom = await Chatroom.findById(messageContainer.room)
-//         currentRoom.chats.push(messageContainer.msg)
-//         currentRoom.save()
-//         socket.to(messageContainer.room).emit('receive_message', messageContainer)
-//     })
+// socket communication events --------------------------------------------------------------------------------
+io.on("connection", (socket) => {
 
-//     //when disconnected from the socket
-//     socket.on("disconnect", () => {
-//         console.log(`user disconnected from socket ${socket.id}`);
-//     })
-// })
+    socket.on("send", async({msg}) => {
+        await NotificationSchema.create({msg : msg, dateCreated : new Date()});
+        io.emit("get", {msg : msg, dateCreated : new Date()});
+    })
+})
 
-// ..............................
-
-
-//mongo setup
+//mongo setup ---------------------------------------------------------------------------------------------
 mongoose.set('strictQuery', true)
 mongoose
     .connect('mongodb+srv://chamalkaMarasinghe:8tqhT1RE8APcKZv6@cluster0.tjh57ad.mongodb.net/recipe_app?retryWrites=true&w=majority')
