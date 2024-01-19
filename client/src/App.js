@@ -2,15 +2,10 @@ import { io } from "socket.io-client"
 import {useEffect, useState} from 'react';
 import { useNavigate } from "react-router-dom";
 
-import { useDispatch, useSelector } from "react-redux";
-import { setNotifications } from "./state/actions";
-
 function App() {
 
-  const dispatch = useDispatch();
-  const { notifications } = useSelector(state => state.notificationReducer);
-
   const navigate = useNavigate();
+  //const [notifications, setNotifications] = useState([]);
   const[socket, setSocket] = useState(); 
   const[val, setVal] = useState('')
   
@@ -29,25 +24,29 @@ function App() {
 
   useEffect(() => {
     socket?.on("get", (obj) => {
-      dispatch(setNotifications({notifications : [...notifications, obj]}));
+      //setNotifications(prevNotifications => [...prevNotifications, obj]);
+      const notifications = JSON.parse(localStorage.getItem('notifications'))
+      if(notifications){
+        notifications.push(obj);
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+      }
     })
   }, [socket])
 
   useEffect(() => {
+    const notifications = JSON.parse(localStorage.getItem('notifications'));
     if(notifications && notifications.length > 0){
       loadNotifications(notifications[notifications.length - 1].dateCreated).then((res) => {
-        if(res.data.length > 0){
-          dispatch(setNotifications({notifications : [...notifications, ...res.data]}))
-        }
+        localStorage.setItem('notifications', JSON.stringify([...notifications, ...res.data]));
       })
-    }
-    else{
+    }else{
       loadNotifications(new Date(0)).then((res) => {
-        if(res.data.length > 0)
-          dispatch(setNotifications({notifications : res.data}));
+        localStorage.setItem('notifications', JSON.stringify(res.data));
       })
     }
   }, [])
+
+  console.log(JSON.parse(localStorage.getItem('notifications')));
 
   return (
     <div className="App">

@@ -36,6 +36,10 @@ const NotificationSchema = mongoose.model('Notification',
         dateCreated : {
             type : Date,
             required : true,
+        },
+        seen : {
+            type : Boolean,
+            required : true
         }
     })
 );
@@ -52,8 +56,8 @@ app.get("/notifications/:lastUpdatedDate", async(req, res) => {
 io.on("connection", (socket) => {
 
     socket.on("send", async({msg}) => {
-        await NotificationSchema.create({msg : msg, dateCreated : new Date()});
-        io.emit("get", {msg : msg, dateCreated : new Date()});
+        await NotificationSchema.create({msg : msg, dateCreated : new Date(), seen : false});
+        io.emit("get", {msg : msg, dateCreated : new Date(), seen : false});
     })
 })
 

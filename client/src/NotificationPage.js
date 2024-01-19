@@ -1,19 +1,24 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 
 function NotificationPage() {
 
-    const { notifications } = useSelector(state => state.notificationReducer);
+    const notifications = JSON.parse(localStorage.getItem('notifications'));
 
     return (
         <div>
             {
-                notifications.map((obj, index) => {
+                notifications?.map((obj, index) => {
                     return(
                         <div key={index}>
-                            <div className="card">
-                                <div className="card-body">{obj.msg}</div>
-                            </div>
+                            {
+                                obj.seen == false ? 
+                                <div className="card" style={{backgroundColor: "#ded8c1"}}>
+                                    <div className="card-body">{obj.msg}</div>
+                                </div> :
+                                <div className="card">
+                                    <div className="card-body">{obj.msg}</div>
+                                </div>
+                            }
                         </div>
                     )
                 })
