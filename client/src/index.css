@@ -17,3 +17,24 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+@keyframes transitionIn {
+  from{
+      opacity: 0;
+      /* transform: rotateX(-10deg); */
+      translate: -50px;
+  }
+
+  to{
+      opacity: 1;
+      /* transform: rotateX(0); */
+      translate: 0px;
+  }
+}
+
+.notification-card{
+  margin-top: 3%;
+  box-shadow: 1px 1px 8px 1px #bab5b5;
+  transition: 200ms;
+  animation: transitionIn 1s;
+}
